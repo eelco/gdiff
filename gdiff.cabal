@@ -1,5 +1,5 @@
 Name:                gdiff
-Version:             1.0.1
+Version:             1.1
 Category:            Data
 License:             BSD3
 License-File:        LICENSE
@@ -15,6 +15,10 @@ Description:
   .
   /CHANGELOG/
   .
+  1.1 (2014-XX-XX)
+  .
+  * Use GHC-7.8's (:~:).
+  .
   1.0.1 (XXXX-XX-XX)
   .
   * Fixed a typo in the documentation.
@@ -23,7 +27,7 @@ Description:
   .
   * Initial release.
 
-Build-Depends:       base >= 3 && < 5
+Build-Depends:       base >= 4.7 && < 5
 Build-Type:          Simple
 Exposed-Modules:     Data.Generic.Diff
-Tested-With:         GHC == 6.10.4, GHC == 6.12.1
+Tested-With:         GHC == 7.8

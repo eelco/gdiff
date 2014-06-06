@@ -44,11 +44,12 @@ module Data.Generic.Diff (
     Family(..),
     Type(..),
     -- ** Supporting datatypes 
-    (:=:)(..),
     Con(..),
     Nil(..), 
     Cons(..),
 ) where
+
+import Data.Type.Equality ( (:~:)(..) )
 
 -- | Edit script type for two single values.
 type EditScript f x y = EditScriptL f (Cons x Nil) (Cons y Nil)
@@ -164,7 +165,7 @@ boring.
 class Family f where
     -- | Return an instance of the equality GADT ('Refl') of the type and
     -- constructor arguments are equal, else return 'Nothing'.
-    decEq     ::                f tx txs -> f ty tys -> Maybe (tx :=: ty, txs :=: tys)
+    decEq     ::                f tx txs -> f ty tys -> Maybe (tx :~: ty, txs :~: tys)
     -- | When the constructor from the family matches the 'real' constructor,
     -- return the arguments in a heterogeneous list, else return 'Nothing'.
     fields    ::                f t ts -> t -> Maybe ts
@@ -175,10 +176,6 @@ class Family f where
     apply     ::                f t ts -> ts -> t
     -- | For 'show'ing the constructors from the family.
     string    ::                f t ts -> String
-
--- | Equality GADT, see the documentation for 'Family' for an example of its use.
-data a :=: b where
-  Refl :: a :=: a
 
 {- |
 
