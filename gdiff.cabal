@@ -30,4 +30,4 @@ Description:
 Build-Depends:       base >= 4.7 && < 5
 Build-Type:          Simple
 Exposed-Modules:     Data.Generic.Diff
-Tested-With:         GHC == 7.8
+Tested-With:         GHC == 7.8.2
