@@ -210,7 +210,7 @@ class (Family f) => Type f t where
 --
 -- Use 'Concr' for concrete constructors (e.g., for simple abstract datatypes).
 --
--- Use 'Abstr' for abstract constructors (e.g., for build-in types or types with many
+-- Use 'Abstr' for abstract constructors (e.g., for built-in types or types with many
 -- (or infinite) constructors)
 data Con :: (* -> * -> *) -> * -> * where
     Concr   :: (List f ts)        =>        f t ts   -> Con f t
