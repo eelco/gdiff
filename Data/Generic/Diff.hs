@@ -44,6 +44,7 @@ module Data.Generic.Diff (
     Family(..),
     Type(..),
     -- ** Supporting datatypes
+    (:~:)(..),
     Con(..),
     Nil(..),
     Cons(..),
