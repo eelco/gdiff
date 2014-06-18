@@ -96,7 +96,7 @@ To use 'diff' and 'patch' on your datatypes, you must create an instance of
 
 There are four steps to set up everything for 'diff' and 'patch'.
 
-(1) Define your datatypes.  (Presumable, you already have done this.)
+(1) Define your datatypes.  (Presumably, you already have done this.)
 
 (2) Create a family datatype, grouping your datatypes together.
 
