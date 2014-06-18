@@ -74,6 +74,7 @@ patchL (Ins  c   d) = insert c .  patchL d
 patchL (Del  c   d) =             patchL d . delete c
 patchL (Cpy  c   d) = insert c .  patchL d . delete c
 patchL (CpyTree  d) = \(CCons x xs) -> CCons x . patchL d $ xs
+patchL End          = \CNil -> CNil
 
 -- | Underlying implementation of 'diff', works with (heterogeneous) lists of
 -- values.
