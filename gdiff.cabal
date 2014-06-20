@@ -31,3 +31,10 @@ Build-Depends:       base >= 4.7 && < 5
 Build-Type:          Simple
 Exposed-Modules:     Data.Generic.Diff
 Tested-With:         GHC == 7.8.2
+
+homepage:    https://github.com/eelco/gdiff
+bug-reports: https://github.com/eelco/gdiff/issues
+
+source-repository head
+    type:     git
+    location: git://github.com/eelco/gdiff.git
