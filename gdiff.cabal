@@ -7,7 +7,7 @@ Author:              Eelco Lempsink, Andres Löh
 Maintainer:          eelco at lempsink nl
 Synopsis:            Generic diff and patch
 
-Description:         
+Description:
   Get an efficient, optimal, type-safe diff and patch function for your
   datatypes of choice by defining a simple GADT and some class instances.
   .
@@ -27,14 +27,18 @@ Description:
   .
   * Initial release.
 
-Build-Depends:       base >= 4.7 && < 5
+Cabal-Version:       >= 1.6
 Build-Type:          Simple
-Exposed-Modules:     Data.Generic.Diff
 Tested-With:         GHC == 7.8.2
 
-Homepage:    https://github.com/eelco/gdiff
-Bug-Reports: https://github.com/eelco/gdiff/issues
+Homepage:            https://github.com/eelco/gdiff
+Bug-Reports:         https://github.com/eelco/gdiff/issues
+
+Library
+    Build-Depends:   base >= 4.7 && < 5
+    Hs-Source-Dirs:  src
+    Exposed-Modules: Data.Generic.Diff
 
 Source-Repository head
-    type:     git
-    location: git://github.com/eelco/gdiff.git
+    Type:     git
+    Location: git://github.com/eelco/gdiff.git
