@@ -55,7 +55,7 @@ import Data.Type.Equality ( (:~:)(..) )
 -- | Edit script type for two single values.
 type EditScript f x y = EditScriptL f (Cons x Nil) (Cons y Nil)
 
--- | Apply the edit script to value.
+-- | Apply the edit script to a value.
 patch :: EditScript f x y -> x -> y
 patch d x = case patchL d (CCons x CNil) of
                CCons y CNil -> y
