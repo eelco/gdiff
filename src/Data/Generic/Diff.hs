@@ -209,7 +209,7 @@ class (Family f) => Type f t where
 -- constructors for a single type can be put together in a list, see 'Type' for
 -- more information and an example.
 --
--- Use 'Concr' for concrete constructors (e.g., for simple abstract datatypes).
+-- Use 'Concr' for concrete constructors (e.g., for simple algebraic datatypes).
 --
 -- Use 'Abstr' for abstract constructors (e.g., for built-in types or types with many
 -- (or infinite) constructors)
