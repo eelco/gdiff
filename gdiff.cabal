@@ -4,28 +4,15 @@ Category:            Data
 License:             BSD3
 License-File:        LICENSE
 Author:              Eelco Lempsink, Andres Löh
-Maintainer:          eelco at lempsink nl
+Maintainer:          Andres Löh <andres@well-typed.com>
 Synopsis:            Generic diff and patch
+Extra-Source-Files:  CHANGELOG.md
 
 Description:
   Get an efficient, optimal, type-safe diff and patch function for your
   datatypes of choice by defining a simple GADT and some class instances.
   .
   Extracted from Eelco Lempsink's Thesis (<http://eelco.lempsink.nl/thesis.pdf>).
-  .
-  /CHANGELOG/
-  .
-  1.1 (2014-XX-XX)
-  .
-  * Use GHC-7.8's (:~:).
-  .
-  1.0.1 (XXXX-XX-XX)
-  .
-  * Fixed a typo in the documentation.
-  .
-  1.0 (2010-03-20)
-  .
-  * Initial release.
 
 Cabal-Version:       >= 1.6
 Build-Type:          Simple
