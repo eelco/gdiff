@@ -21,7 +21,7 @@ that need to be performed to get from the /source/ value to the /destination/
 value. The edit script can be used by 'patch', inspected with 'show' and used
 for all kinds of interesting stuff /you/ come up with.
 
-The library has been extracted from Eelco Lempsink's Master's Thesis 
+The library has been extracted from Eelco Lempsink's Master's Thesis
 /Generic type-safe diff and patch for families of datatypes/ (available online:
 <http://eelco.lempsink.nl/thesis.pdf>).  See Appendix C for a large example.
 Note that some types and functions have been renamed for the benefit of the API
@@ -31,10 +31,10 @@ Note that some types and functions have been renamed for the benefit of the API
 module Data.Generic.Diff (
     -- * Diffing and patching
     diff,
-    patch,  
-    -- ** For multiple datatypes 
+    patch,
+    -- ** For multiple datatypes
     diffL,
-    patchL, 
+    patchL,
     -- ** Patch compression
     compress,
     -- * Patch datatype
@@ -43,17 +43,19 @@ module Data.Generic.Diff (
     -- * Type classes
     Family(..),
     Type(..),
-    -- ** Supporting datatypes 
-    (:=:)(..),
+    -- ** Supporting datatypes
+    (:~:)(..),
     Con(..),
-    Nil(..), 
+    Nil(..),
     Cons(..),
 ) where
+
+import Data.Type.Equality ( (:~:)(..) )
 
 -- | Edit script type for two single values.
 type EditScript f x y = EditScriptL f (Cons x Nil) (Cons y Nil)
 
--- | Apply the edit script to value.
+-- | Apply the edit script to a value.
 patch :: EditScript f x y -> x -> y
 patch d x = case patchL d (CCons x CNil) of
                CCons y CNil -> y
@@ -71,7 +73,8 @@ patchL :: forall f txs tys . EditScriptL f txs tys -> txs -> tys
 patchL (Ins  c   d) = insert c .  patchL d
 patchL (Del  c   d) =             patchL d . delete c
 patchL (Cpy  c   d) = insert c .  patchL d . delete c
-patchL (CpyTree  d) = \(CCons x xs) -> CCons x . patchL d $ xs 
+patchL (CpyTree  d) = \(CCons x xs) -> CCons x . patchL d $ xs
+patchL End          = \CNil -> CNil
 
 -- | Underlying implementation of 'diff', works with (heterogeneous) lists of
 -- values.
@@ -86,14 +89,14 @@ data Nil        = CNil
 -- your 'Family' instance.
 data Cons x xs  = CCons x xs
 
-{- | 
+{- |
 
 To use 'diff' and 'patch' on your datatypes, you must create an instance of
-'Family'.  
+'Family'.
 
 There are four steps to set up everything for 'diff' and 'patch'.
 
-(1) Define your datatypes.  (Presumable, you already have done this.)
+(1) Define your datatypes.  (Presumably, you already have done this.)
 
 (2) Create a family datatype, grouping your datatypes together.
 
@@ -114,7 +117,7 @@ The second step is creating the family datatype.  Each constructor in the
 datatypes above gets a constructor in a family GADT:
 
 > data ExprTermFamily :: * -> * -> * where
->     Min'     ::          ExprTermFamily Expr (Cons Expr (Cons Term Nil)) 
+>     Min'     ::          ExprTermFamily Expr (Cons Expr (Cons Term Nil))
 >     Parens'  ::          ExprTermFamily Term (Cons Expr Nil)
 >     Number'  ::          ExprTermFamily Term (Cons Int Nil)
 >     Int'     ::  Int ->  ExprTermFamily Int  Nil
@@ -142,18 +145,18 @@ boring.
 >     decEq (Int' x)  (Int' y)  | x == y     = Just (Refl, Refl)
 >                               | otherwise  = Nothing
 >     decEq _        _          = Nothing
-> 
+>
 >     fields Min'      (Min e t)   = Just (CCons e (CCons t CNil))
 >     fields Parens'   (Parens e)  = Just (CCons e CNil)
 >     fields Number'   (Number i)  = Just (CCons i CNil)
 >     fields (Int' _)  _           = Just CNil
 >     fields _         _           = Nothing
-> 
+>
 >     apply Min'      (CCons e (CCons t CNil))  = Min e t
 >     apply Parens'   (CCons e CNil)            = Parens e
 >     apply Number'   (CCons i CNil)            = Number i
 >     apply (Int' i)  CNil                      = i
-> 
+>
 >     string Min'      = "Min"
 >     string Parens'   = "Parens"
 >     string Number'   = "Number"
@@ -164,7 +167,7 @@ boring.
 class Family f where
     -- | Return an instance of the equality GADT ('Refl') of the type and
     -- constructor arguments are equal, else return 'Nothing'.
-    decEq     ::                f tx txs -> f ty tys -> Maybe (tx :=: ty, txs :=: tys)
+    decEq     ::                f tx txs -> f ty tys -> Maybe (tx :~: ty, txs :~: tys)
     -- | When the constructor from the family matches the 'real' constructor,
     -- return the arguments in a heterogeneous list, else return 'Nothing'.
     fields    ::                f t ts -> t -> Maybe ts
@@ -175,10 +178,6 @@ class Family f where
     apply     ::                f t ts -> ts -> t
     -- | For 'show'ing the constructors from the family.
     string    ::                f t ts -> String
-
--- | Equality GADT, see the documentation for 'Family' for an example of its use.
-data a :=: b where
-  Refl :: a :=: a
 
 {- |
 
@@ -193,14 +192,14 @@ Continuing the example from the 'Family' documentation, the instances for
 
 > instance Type ExprTermFamily Term where
 >     constructors = [Concr Number', Concr Parens']
-> 
+>
 > instance Type ExprTermFamily Expr where
 >     constructors = [Concr Min']
-> 
+>
 > instance Type ExprTermFamily Int where
 >     constructors = [Abstr Int']
 
--} 
+-}
 
 class (Family f) => Type f t where
     -- | List of constructors from the family GADT for one type in your family
@@ -208,11 +207,11 @@ class (Family f) => Type f t where
 
 -- | 'Con' wraps both concrete and abstract constructors to a simple type so
 -- constructors for a single type can be put together in a list, see 'Type' for
--- more information and an example. 
+-- more information and an example.
 --
--- Use 'Concr' for concrete constructors (e.g., for simple abstract datatypes).
+-- Use 'Concr' for concrete constructors (e.g., for simple algebraic datatypes).
 --
--- Use 'Abstr' for abstract constructors (e.g., for build-in types or types with many
+-- Use 'Abstr' for abstract constructors (e.g., for built-in types or types with many
 -- (or infinite) constructors)
 data Con :: (* -> * -> *) -> * -> * where
     Concr   :: (List f ts)        =>        f t ts   -> Con f t
@@ -261,7 +260,7 @@ data EditScriptL :: (* -> * -> *) -> * -> * -> * where
                EditScriptL f (Cons t       txs)  (Cons t       tys)
 
   CpyTree  ::  (Type f t, List f txs, List f tys) =>
-               EditScriptL f txs tys                                             -> 
+               EditScriptL f txs tys                                             ->
                EditScriptL f (Cons t txs) (Cons t tys)
 
   End      ::  EditScriptL f Nil                 Nil
@@ -307,13 +306,13 @@ matchConstructor ::  (Type f t) => t ->
                      (forall ts. f t ts -> IsList f ts -> ts -> r) -> r
 matchConstructor = tryEach constructors
   where
-    tryEach :: (Type f t) => [Con f t] -> t -> 
+    tryEach :: (Type f t) => [Con f t] -> t ->
       (forall ts. f t ts -> IsList f ts -> ts -> r) -> r
     tryEach (Concr c  : cs)  x  k  = matchOrRetry c      cs x k
     tryEach (Abstr c  : cs)  x  k  = matchOrRetry (c x)  cs x k
     tryEach [] _ _ = error "Incorrect Family or Type instance."
 
-    matchOrRetry :: (List f ts, Type f t) => f t ts -> [Con f t] -> t -> 
+    matchOrRetry :: (List f ts, Type f t) => f t ts -> [Con f t] -> t ->
       (forall ts'. f t ts' -> IsList f ts' -> ts' -> r) -> r
     matchOrRetry c cs x k = case fields c x of
       Just ts  -> k c (isList c) ts
@@ -344,46 +343,46 @@ reify IsNil          = RList
 reify (IsCons ists)  = case reify ists of
                          RList -> RList
 
-ins :: (Type f t) => IsList f ts -> IsList f tys -> 
+ins :: (Type f t) => IsList f ts -> IsList f tys ->
       f t ts -> EditScriptL f txs (Append ts tys) -> EditScriptL f txs (Cons t tys)
 ins ists isys =
   case (reify ists, reify isys) of
     (RList, RList) -> Ins
 
 del :: (Type f t) => IsList f ts -> IsList f txs ->
-      f t ts -> EditScriptL f (Append ts txs) tys -> EditScriptL f (Cons t txs) tys 
+      f t ts -> EditScriptL f (Append ts txs) tys -> EditScriptL f (Cons t txs) tys
 del ists isxs =
   case (reify ists, reify isxs) of
     (RList, RList) -> Del
 
 cpy :: (Type f t) => IsList f ts -> IsList f txs -> IsList f tys ->
-      f t ts -> EditScriptL f (Append ts txs) (Append ts tys) -> 
+      f t ts -> EditScriptL f (Append ts txs) (Append ts tys) ->
       EditScriptL f (Cons t txs) (Cons t tys)
 cpy ists isxs isys =
   case (reify ists, reify isxs, reify isys) of
     (RList, RList, RList) -> Cpy
 
 compress :: (Family f) => EditScriptL f txs tys -> EditScriptL f txs tys
-compress End           = End 
+compress End           = End
 compress (Ins  c   d)  = Ins  c   (compress d)
 compress (Del  c   d)  = Del  c   (compress d)
-compress (CpyTree  d)  = CpyTree  (compress d) 
+compress (CpyTree  d)  = CpyTree  (compress d)
 compress (Cpy  c   d)  = let d' = compress d in
   case copied (isList c) d' of
     Just d''  -> CpyTree d''
     Nothing   -> Cpy c d'
 
-copied :: (Family f) => IsList f ts -> 
+copied :: (Family f) => IsList f ts ->
              EditScriptL f (Append ts txs) (Append ts tys) -> Maybe (EditScriptL f txs tys)
 copied IsNil                  d   = Just d
 copied (IsCons xs)  (CpyTree  d)  = copied xs d
-copied (IsCons _)   _             = Nothing 
+copied (IsCons _)   _             = Nothing
 
 data EditScriptLMemo :: (* -> * -> *) -> * -> * -> * where
-  CC :: (Type f tx, Type f ty, List f txs', List f tys') => 
+  CC :: (Type f tx, Type f ty, List f txs', List f tys') =>
         f tx txs' -> f ty tys' ->
         EditScriptL f (Cons tx txs) (Cons ty tys) ->
-        EditScriptLMemo f (Cons tx txs)      (Append tys' tys)  -> 
+        EditScriptLMemo f (Cons tx txs)      (Append tys' tys)  ->
         EditScriptLMemo f (Append txs' txs)  (Cons ty tys)      ->
         EditScriptLMemo f (Append txs' txs)  (Append tys' tys)  ->
         EditScriptLMemo f (Cons tx txs)      (Cons ty tys)
@@ -401,9 +400,9 @@ data EditScriptLMemo :: (* -> * -> *) -> * -> * -> * where
 diffLMemo :: (Family f, List f txs, List f tys) => txs -> tys -> EditScriptLMemo f txs tys
 diffLMemo = diffLMemo' list list
 
-diffLMemo' :: (Family f) => forall txs tys. IsList f txs -> IsList f tys -> 
+diffLMemo' :: (Family f) => forall txs tys. IsList f txs -> IsList f tys ->
         txs -> tys -> EditScriptLMemo f txs tys
-diffLMemo' IsNil          IsNil          CNil          CNil          = 
+diffLMemo' IsNil          IsNil          CNil          CNil          =
   NN End
 diffLMemo' (IsCons isxs)  IsNil          (CCons x xs)  CNil          =
   matchConstructor x
@@ -421,12 +420,12 @@ diffLMemo' (IsCons isxs)  (IsCons isys)  (CCons x xs)  (CCons y ys)  =
   matchConstructor x
     (\ cx isxs' xs' ->
        matchConstructor y
-       (\ cy isys' ys' -> 
+       (\ cy isys' ys' ->
           let  c  = diffLMemo'  (appendList isxs' isxs)     (appendList isys' isys)
                             (append isxs' isxs xs' xs)  (append isys' isys ys' ys)
-               d  = extendd  isys'  isys  cy  c 
+               d  = extendd  isys'  isys  cy  c
                i  = extendi  isxs'  isxs  cx  c
-          in cc isxs' isxs isys' isys cx cy 
+          in cc isxs' isxs isys' isys cx cy
                (bestEditScriptLMemo cx cy isxs' isxs isys' isys i d c) i d c))
 
 getEditScriptL :: EditScriptLMemo f txs tys -> EditScriptL f txs tys
@@ -437,7 +436,7 @@ getEditScriptL (NN d)           = d
 
 bestEditScriptLMemo ::  (Type f tx, Type f ty) => f tx txs' -> f ty tys' ->
               IsList f txs' -> IsList f txs -> IsList f tys' -> IsList f tys ->
-              EditScriptLMemo f (Cons tx txs)      (Append tys' tys)  -> 
+              EditScriptLMemo f (Cons tx txs)      (Append tys' tys)  ->
               EditScriptLMemo f (Append txs' txs)  (Cons ty tys)      ->
               EditScriptLMemo f (Append txs' txs)  (Append tys' tys)  ->
               EditScriptL f (Cons tx txs) (Cons ty tys)
@@ -446,7 +445,7 @@ bestEditScriptLMemo cx cy isxs' isxs isys' isys i d c = case decEq cx cy of
     Nothing           -> best  (ins isys' isys cy (getEditScriptL i))
                                (del isxs' isxs cx (getEditScriptL d))
 
-extendd :: (Type f ty) => IsList f tys' -> IsList f tys -> f ty tys' -> 
+extendd :: (Type f ty) => IsList f tys' -> IsList f tys -> f ty tys' ->
            EditScriptLMemo f txs' (Append tys' tys) ->
            EditScriptLMemo f txs' (Cons ty tys)
 extendd isys' isys cy dt@(NN d)          = nc isys' isys cy (ins isys' isys cy d) dt
@@ -454,11 +453,11 @@ extendd isys' isys cy dt@(NC _ d _)      = nc isys' isys cy (ins isys' isys cy d
 extendd isys' isys cy dt@(CN _ _ _)        = extendd' isys' isys cy dt
 extendd isys' isys cy dt@(CC _ _ _ _ _ _)  = extendd' isys' isys cy dt
 
-extendd' :: (Type f ty, Type f tx) => IsList f tys' -> IsList f tys -> f ty tys' -> 
+extendd' :: (Type f ty, Type f tx) => IsList f tys' -> IsList f tys -> f ty tys' ->
             EditScriptLMemo f (Cons tx txs) (Append tys' tys) ->
             EditScriptLMemo f (Cons tx txs) (Cons ty tys)
 extendd' isys' isys cy dt =
-  extractd dt (\ isxs' isxs cx dt' -> 
+  extractd dt (\ isxs' isxs cx dt' ->
     let i = dt
         d = extendd isys' isys cy dt'
         c = dt'
@@ -472,16 +471,16 @@ extendi isxs' isxs cx dt@(CN _ d _)     = cn isxs' isxs cx (del isxs' isxs cx d)
 extendi isxs' isxs cx dt@(NC _ _ _)       = extendi' isxs' isxs cx dt
 extendi isxs' isxs cx dt@(CC _ _ _ _ _ _) = extendi' isxs' isxs cx dt
 
-extendi' :: (Type f tx, Type f ty) => IsList f txs' -> IsList f txs -> f tx txs' -> 
+extendi' :: (Type f tx, Type f ty) => IsList f txs' -> IsList f txs -> f tx txs' ->
             EditScriptLMemo f (Append txs' txs)  (Cons ty tys) ->
             EditScriptLMemo f (Cons tx txs)      (Cons ty tys)
 extendi' isxs' isxs cx dt =
-  extracti dt (\ isys' isys cy dt' -> 
+  extracti dt (\ isys' isys cy dt' ->
     let i = extendi isxs' isxs cx dt'
         d = dt
         c = dt'
-    in  cc   isxs' isxs isys' isys cx cy 
-             (bestEditScriptLMemo cx cy isxs' isxs isys' isys i d c) 
+    in  cc   isxs' isxs isys' isys cx cy
+             (bestEditScriptLMemo cx cy isxs' isxs isys' isys i d c)
              i d c)
 
 extractd :: (Type f tx) => EditScriptLMemo f (Cons tx txs) tys' ->
@@ -498,7 +497,7 @@ sourceTail (Cpy _ _) = list
 extracti :: (Type f ty) => EditScriptLMemo f txs' (Cons ty tys) ->
           (forall tys'. IsList f tys' -> IsList f tys -> f ty tys' ->
           EditScriptLMemo f txs' (Append tys' tys) -> r) -> r
-extracti (CC _ c d i _ _) k = k (isList c) (targetTail d) c i 
+extracti (CC _ c d i _ _) k = k (isList c) (targetTail d) c i
 extracti (NC c d i)       k = k (isList c) (targetTail d) c i
 
 targetTail :: EditScriptL f txs (Cons ty tys) -> IsList f tys
@@ -506,28 +505,27 @@ targetTail (Ins _ _) = list
 targetTail (Del _ d) = targetTail d
 targetTail (Cpy _ _) = list
 
-nc :: (Type f t) => IsList f ts -> IsList f tys -> 
-      f t ts -> EditScriptL f Nil (Cons t tys) -> 
+nc :: (Type f t) => IsList f ts -> IsList f tys ->
+      f t ts -> EditScriptL f Nil (Cons t tys) ->
       EditScriptLMemo f Nil (Append ts tys) -> EditScriptLMemo f Nil (Cons t tys)
 nc ists isys =
   case (reify ists, reify isys) of
     (RList, RList) -> NC
 
-cn :: (Type f t) => IsList f ts -> IsList f txs -> 
+cn :: (Type f t) => IsList f ts -> IsList f txs ->
       f t ts -> EditScriptL f (Cons t txs) Nil ->
       EditScriptLMemo f (Append ts txs) Nil -> EditScriptLMemo f (Cons t txs) Nil
 cn ists isxs =
   case (reify ists, reify isxs) of
     (RList, RList) -> CN
 
-cc :: (Type f tx, Type f ty) => 
+cc :: (Type f tx, Type f ty) =>
       IsList f txs' -> IsList f txs -> IsList f tys' -> IsList f tys ->
       f tx txs' -> f ty tys' -> EditScriptL f (Cons tx txs) (Cons ty tys) ->
-      EditScriptLMemo f (Cons tx txs)      (Append tys' tys)    -> 
+      EditScriptLMemo f (Cons tx txs)      (Append tys' tys)    ->
       EditScriptLMemo f (Append txs' txs)  (Cons ty tys)        ->
       EditScriptLMemo f (Append txs' txs)  (Append tys' tys)  ->
       EditScriptLMemo f (Cons tx txs)      (Cons ty tys)
 cc isxs' isxs isys' isys =
   case (reify isxs', reify isxs, reify isys', reify isys) of
     (RList, RList, RList, RList) -> CC
-
