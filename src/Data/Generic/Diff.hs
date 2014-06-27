@@ -325,10 +325,11 @@ data Nat = Zero | Succ Nat
   deriving (Eq, Show)
 
 steps :: EditScriptL f txs tys -> Nat
-steps (Ins  _ d)  = Succ $ steps d
-steps (Del  _ d)  = Succ $ steps d
-steps (Cpy  _ d)  = Succ $ steps d
-steps End         = Zero
+steps (Ins   _ d)  = Succ $ steps d
+steps (Del   _ d)  = Succ $ steps d
+steps (Cpy   _ d)  = Succ $ steps d
+steps (CpyTree d)  = Succ $ steps d -- we're not calling 'steps' on compressed paths; still no reason to crash
+steps End          = Zero
 
 bestSteps :: Nat -> d -> Nat -> d -> d
 bestSteps Zero      x _         _ = x
@@ -490,9 +491,10 @@ extractd (CC c _ d' _ d _) k = k (isList c) (sourceTail d') c d
 extractd (CN c d' d)       k = k (isList c) (sourceTail d') c d
 
 sourceTail :: EditScriptL f (Cons tx txs) tys -> IsList f txs
-sourceTail (Ins _ d) = sourceTail d
-sourceTail (Del _ _) = list
-sourceTail (Cpy _ _) = list
+sourceTail (Ins   _ d) = sourceTail d
+sourceTail (Del   _ _) = list
+sourceTail (Cpy   _ _) = list
+sourceTail (CpyTree _) = list
 
 extracti :: (Type f ty) => EditScriptLMemo f txs' (Cons ty tys) ->
           (forall tys'. IsList f tys' -> IsList f tys -> f ty tys' ->
@@ -501,9 +503,10 @@ extracti (CC _ c d i _ _) k = k (isList c) (targetTail d) c i
 extracti (NC c d i)       k = k (isList c) (targetTail d) c i
 
 targetTail :: EditScriptL f txs (Cons ty tys) -> IsList f tys
-targetTail (Ins _ _) = list
-targetTail (Del _ d) = targetTail d
-targetTail (Cpy _ _) = list
+targetTail (Ins   _ _) = list
+targetTail (Del   _ d) = targetTail d
+targetTail (Cpy   _ _) = list
+targetTail (CpyTree _) = list
 
 nc :: (Type f t) => IsList f ts -> IsList f tys ->
       f t ts -> EditScriptL f Nil (Cons t tys) ->
