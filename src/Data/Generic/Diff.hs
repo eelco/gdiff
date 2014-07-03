@@ -265,9 +265,9 @@ data EditScriptL :: (* -> * -> *) -> * -> * -> * where
 
   End      ::  EditScriptL f Nil                 Nil
 
-type family    Append txs tys :: *
-type instance  Append Nil            tys = tys
-type instance  Append (Cons tx txs)  tys = Cons tx (Append txs tys)
+type family    Append txs tys :: * where
+  Append Nil            tys = tys
+  Append (Cons tx txs)  tys = Cons tx (Append txs tys)
 
 appendList :: IsList f txs -> IsList f tys -> IsList f (Append txs tys)
 appendList IsNil         isys = isys
