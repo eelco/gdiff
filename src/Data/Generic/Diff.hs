@@ -48,6 +48,13 @@ module Data.Generic.Diff (
     Con(..),
     Nil(..),
     Cons(..),
+    -- ** Exports necessary to reimplement patch
+    List(..),
+    IsList(..),
+    Append,
+    append,
+    split,
+    isList
 ) where
 
 import Data.Type.Equality ( (:~:)(..) )
