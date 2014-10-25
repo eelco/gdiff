@@ -3,7 +3,6 @@
 {-#  LANGUAGE TypeFamilies  #-}
 {-#  LANGUAGE TypeOperators  #-}
 {-#  LANGUAGE MultiParamTypeClasses  #-}
-{-#  LANGUAGE FunctionalDependencies  #-}
 {-#  LANGUAGE FlexibleInstances  #-}
 {-#  LANGUAGE RankNTypes  #-}
 {-#  LANGUAGE ScopedTypeVariables  #-}
