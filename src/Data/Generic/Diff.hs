@@ -1,12 +1,9 @@
 {-#  LANGUAGE GADTs  #-}
-{-#  LANGUAGE KindSignatures  #-}
 {-#  LANGUAGE TypeFamilies  #-}
 {-#  LANGUAGE TypeOperators  #-}
 {-#  LANGUAGE MultiParamTypeClasses  #-}
 {-#  LANGUAGE FlexibleInstances  #-}
 {-#  LANGUAGE RankNTypes  #-}
-{-#  LANGUAGE ScopedTypeVariables  #-}
-{-#  LANGUAGE OverlappingInstances  #-} --  Only for the Show
 
 {- |
 
