@@ -1,13 +1,9 @@
 {-#  LANGUAGE GADTs  #-}
-{-#  LANGUAGE KindSignatures  #-}
 {-#  LANGUAGE TypeFamilies  #-}
 {-#  LANGUAGE TypeOperators  #-}
 {-#  LANGUAGE MultiParamTypeClasses  #-}
-{-#  LANGUAGE FunctionalDependencies  #-}
 {-#  LANGUAGE FlexibleInstances  #-}
 {-#  LANGUAGE RankNTypes  #-}
-{-#  LANGUAGE ScopedTypeVariables  #-}
-{-#  LANGUAGE OverlappingInstances  #-} --  Only for the Show
 
 {- |
 
@@ -48,6 +44,13 @@ module Data.Generic.Diff (
     Con(..),
     Nil(..),
     Cons(..),
+    -- ** Exports necessary to reimplement patch
+    List(..),
+    IsList(..),
+    Append,
+    append,
+    split,
+    isList
 ) where
 
 import Data.Type.Equality ( (:~:)(..) )
@@ -265,9 +268,9 @@ data EditScriptL :: (* -> * -> *) -> * -> * -> * where
 
   End      ::  EditScriptL f Nil                 Nil
 
-type family    Append txs tys :: *
-type instance  Append Nil            tys = tys
-type instance  Append (Cons tx txs)  tys = Cons tx (Append txs tys)
+type family    Append txs tys :: * where
+  Append Nil            tys = tys
+  Append (Cons tx txs)  tys = Cons tx (Append txs tys)
 
 appendList :: IsList f txs -> IsList f tys -> IsList f (Append txs tys)
 appendList IsNil         isys = isys
