@@ -217,8 +217,8 @@ class (Family f) => Type f t where
 -- Use 'Abstr' for abstract constructors (e.g., for built-in types or types with many
 -- (or infinite) constructors)
 data Con :: (* -> * -> *) -> * -> * where
-    Concr   :: (List f ts)        =>        f t ts   -> Con f t
-    Abstr   :: (Eq t, List f ts)  => (t ->  f t ts)  -> Con f t
+    Concr   :: (List f ts)  =>        f t ts   -> Con f t
+    Abstr   :: (List f ts)  => (t ->  f t ts)  -> Con f t
 
 class List f ts where
   list :: IsList f ts
