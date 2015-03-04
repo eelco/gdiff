@@ -219,6 +219,8 @@ class (Family f) => Type f t where
 data Con :: (* -> * -> *) -> * -> * where
     Concr   :: (List f ts)  =>        f t ts   -> Con f t
     Abstr   :: (List f ts)  => (t ->  f t ts)  -> Con f t
+    --Retro   :: (t -> (Dict (List f) ts, f t ts))  -> Con f t
+    Retro   :: (t -> Con f t)  -> Con f t
 
 class List f ts where
   list :: IsList f ts
@@ -313,6 +315,8 @@ matchConstructor = tryEach constructors
       (forall ts. f t ts -> IsList f ts -> ts -> r) -> r
     tryEach (Concr c  : cs)  x  k  = matchOrRetry c      cs x k
     tryEach (Abstr c  : cs)  x  k  = matchOrRetry (c x)  cs x k
+    --tryEach (Retro c  : cs)  x  k  = case c x of (Dict, c) -> matchOrRetry c cs x k
+    tryEach (Retro c  : cs)  x  k  = tryEach (c x : cs) x k
     tryEach [] _ _ = error "Incorrect Family or Type instance."
 
     matchOrRetry :: (List f ts, Type f t) => f t ts -> [Con f t] -> t ->
