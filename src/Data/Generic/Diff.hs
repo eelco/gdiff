@@ -219,9 +219,13 @@ class (Family f) => Type f t where
 --
 -- Use 'Abstr' for abstract constructors (e.g., for built-in types or types with many
 -- (or infinite) constructors)
+--
+-- Use 'Meta' for abstract constructors whose subtrees are of existential type
+-- (which means exposing 'ts' is forbidden by the type checker)
 data Con :: (* -> * -> *) -> * -> * where
     Concr   :: (List f ts)  =>        f t ts   -> Con f t
     Abstr   :: (List f ts)  => (t ->  f t ts)  -> Con f t
+    Meta    ::                 (t -> Con f t)  -> Con f t
 
 class List f ts where
   list :: IsList f ts
@@ -316,6 +320,7 @@ matchConstructor = tryEach constructors
       (forall ts. f t ts -> IsList f ts -> ts -> r) -> r
     tryEach (Concr c  : cs)  x  k  = matchOrRetry c      cs x k
     tryEach (Abstr c  : cs)  x  k  = matchOrRetry (c x)  cs x k
+    tryEach (Meta  c  : cs)  x  k  = tryEach (c x : cs) x k
     tryEach [] _ _ = error "Incorrect Family or Type instance."
 
     matchOrRetry :: (List f ts, Type f t) => f t ts -> [Con f t] -> t ->
