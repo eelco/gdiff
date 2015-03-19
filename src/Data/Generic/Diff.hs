@@ -92,6 +92,9 @@ data Nil        = CNil
 -- your 'Family' instance.
 data Cons x xs  = CCons x xs
 
+infixr 5 `Cons`
+infixr 5 `CCons`
+
 {- |
 
 To use 'diff' and 'patch' on your datatypes, you must create an instance of
